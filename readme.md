@@ -2,13 +2,13 @@
 # Rate Limiter Assignment
 
 ## Motivation 
-Rate limiters are mechanisem that limit the number of requests that can be made to a specific endpoint.
-Great addion for Security, and Quality Control.
-## Requirements
+A mechanism that restricts the number of requests allowed to a specific endpoint. 
+This is a valuable addition to enhancing security and ensuring quality control.
 
+## Requirements
 - Initialize the RateLimit service with a function, and allow the creation of multiple rate limits with varying request capacities and time windows.
 - Provide a Perform method, Task Perform(TArg argument), as the primary interface for clients to interact with the service.
-- Support multiple running rate limits ensuring all are respected.
+- Support multiple running rate limits, ensuring they are respected.
 - Handles concurrent calls from multiple threads safely. 
 
 > *NOTE Do not use external Libraries*
@@ -16,22 +16,22 @@ Great addion for Security, and Quality Control.
 ## Implementation Approaches
 
 ### Sliding Window
-Ensure that you are limited to 10 requests in any rolling 24-hour window.
+The algorithm ensures you are limited to several requests in any rolling 24-hour window.
 
 *Pros*
 - Prevents bursts near the reset times
 - Requests are more scattered during the day
-- More flexiable as it doesn't reset at fixed intervals
+- More flexible as it doesn't reset at fixed intervals
 - More precise in allowing rate limits based on the actual time of actions.
-- no starvation problem
+- No starvation problem
 
 *Cons*
 - Complex implementation
-- Uses more memory to track all timestamps (even the rejected).
+- Use more memory to track all timestamps (even the rejected).
 - Handles timestamps for each execution.
 
 #### Absolute
-Ensure 10 requests are made on a calendar day starting at midnight (00:00).
+Ensures several requests are made on a calendar day starting at midnight (00:00).
 
 *Pros*
 - Predictable
@@ -40,7 +40,23 @@ Ensure 10 requests are made on a calendar day starting at midnight (00:00).
 - Can exceed the limit in a very short time or near reset times.
 - Not accurate
 
-## How To Test It
+## Project Layers
+
+├───RateLimiter.Core
+│   ├───Models
+│   │       RateLimiterPolicy.cs
+│   ├───Storage // Optional NOT IN USE
+│   │       IRateLimitStorage.cs
+│   │       localStorage.cs
+│   └───Strategy
+│           Absolute.cs // Optional NOT IN USE
+│           IRateLimitStrategy.cs
+│           SlidingWindow.cs
+├───RateLimiter.Service
+|   |   RateLimiterService.cs
+│   │   Run.cs
+└───RateLimiter.Tests // 
+    │   UnitTest1.cs
 
 ## Usage
 
