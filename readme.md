@@ -6,15 +6,10 @@ Rate limiters are mechanisem that limit the number of requests that can be made 
 Great addion for Security, and Quality Control.
 ## Requirements
 
-- Initialize RateLimit service with a Function and create several rate limits diffir by requests capacity and time window.
-- Provide an action method **Perform**, `Task Perform(TArg argument)` as the interface to clients.
-
+- Initialize the RateLimit service with a function, and allow the creation of multiple rate limits with varying request capacities and time windows.
+- Provide a Perform method, Task Perform(TArg argument), as the primary interface for clients to interact with the service.
 - Support multiple running rate limits ensuring all are respected.
-- Delays exection when necessary to comply with rate limits.
 - Handles concurrent calls from multiple threads safely. 
-    e.g A passed function might be a call to external API, and it should receive the rate limits
-        10 per second, 100 per minute, 1000 per daytime
-- Support multiple rate limits simultaneously. 
 
 > *NOTE Do not use external Libraries*
 
