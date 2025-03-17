@@ -1,0 +1,87 @@
+# Operating System files
+##########################
+.DS_Store
+Thumbs.db
+
+# IDEs and Editors
+######################
+# VS Code settings
+.vscode/
+
+# JetBrains IDEs (IntelliJ, PyCharm, etc.)
+.idea/
+
+# Windows Installer files
+##########################
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Node.js dependencies
+##########################
+node_modules/
+
+# Logs
+##########################
+*.log
+
+# Build directories
+##########################
+/build/
+/bin/
+/obj/
+
+# Compiled source code
+##########################
+*.class
+*.dll
+*.exe
+*.o
+*.obj
+*.so
+*.dylib
+*.a
+*.la
+*.lo
+*.out
+*.app
+
+# Python compiled files
+##########################
+*.pyc
+*.pyo
+
+# .NET / C# files
+##########################
+bin/
+obj/
+
+# Ruby specific
+##########################
+*.gem
+*.rbc
+.bundle
+.config
+.yardoc
+*.gem
+
+# Environment files
+##########################
+.env
+*.env
+
+# Temporary files
+##########################
+*.tmp
+*.swp
+*.swo
+
+# macOS system files
+##########################
+.DS_Store
+
+# Linux system files
+##########################
+*~
