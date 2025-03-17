@@ -42,21 +42,23 @@ Ensures several requests are made on a calendar day starting at midnight (00:00)
 
 ## Project Layers
 
-├───RateLimiter.Core
-│   ├───Models
-│   │       RateLimiterPolicy.cs
-│   ├───Storage // Optional NOT IN USE
-│   │       IRateLimitStorage.cs
-│   │       localStorage.cs
-│   └───Strategy
-│           Absolute.cs // Optional NOT IN USE
-│           IRateLimitStrategy.cs
-│           SlidingWindow.cs
-├───RateLimiter.Service
-|   |   RateLimiterService.cs
-│   │   Run.cs
-└───RateLimiter.Tests // 
-    │   UnitTest1.cs
+RateLimiter.Core
+- Models :
+    - RateLimiterPolicy.cs
+- Storage : // Optional NOT IN USE
+    - IRateLimitStorage.cs
+    - localStorage.cs
+- Strategy :
+    - Absolute.cs // Optional NOT IN USE
+    - IRateLimitStrategy.cs
+    - SlidingWindow.cs
+
+RateLimiter.Service
+- RateLimiterService.cs
+- Run.cs
+
+RateLimiter.Tests // 
+- UnitTest1.cs
 
 ## Usage
 
