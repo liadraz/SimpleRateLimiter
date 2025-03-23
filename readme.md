@@ -6,14 +6,20 @@ A mechanism that restricts the number of requests allowed to a specific endpoint
 This is a valuable addition to enhancing security and ensuring quality control.
 
 ## Requirements
-- Initialize the RateLimit service with a function, and allow the creation of multiple rate limits with varying request capacities and time windows.
-- Provide a Perform method, Task Perform(TArg argument), as the primary interface for clients to interact with the service.
-- Support multiple running rate limits, ensuring they are respected.
-- Handles concurrent calls from multiple threads safely. 
+- Initiate the RateLimiter with `Func` and with multiple rate limit policies.
+- Provide a `Task Perform(TArg arg)` method as the interface for request calls.
+- Gurantee all rate limit polices are honored. If not delay execution until it does.
+- The RateLimiter is expected to handle concurrent calls from multiple threads safely.
+- Use the most effective algorithm for limit requests - Sliding winow Vs Absolute.
 
-> *NOTE Do not use external Libraries*
+> *Do not use external Libraries*
 
-## Implementation Approaches
+
+## Algorithm Approaches
+
+The asinmengt asked me to choose between two algorithms. Each has its cons and pros.
+I choose to implement the sliding window which is more accurate and effective in case many requests
+are being send to an API for long time.
 
 ### Sliding Window
 The algorithm ensures you are limited to several requests in any rolling 24-hour window.
@@ -22,12 +28,12 @@ The algorithm ensures you are limited to several requests in any rolling 24-hour
 - Prevents bursts near the reset times
 - Requests are more scattered during the day
 - More flexible as it doesn't reset at fixed intervals
-- More precise in allowing rate limits based on the actual time of actions.
+- More precise allowing rate limits based on the actual time of actions.
 - No starvation problem
 
 *Cons*
 - Complex implementation
-- Use more memory to track all timestamps (even the rejected).
+- Use more memory to track all timestamps.
 - Handles timestamps for each execution.
 
 #### Absolute
@@ -36,35 +42,43 @@ Ensures several requests are made on a calendar day starting at midnight (00:00)
 *Pros*
 - Predictable
 - Easy to implement
+
 *Cons*
 - Can exceed the limit in a very short time or near reset times.
 - Not accurate
 
-## Project Layers
+## Usage
+An example of RateLimiter servive can be run via the run.exe
+The example creates a ratelimiter service, with Func that prints a massage in case
+it succeed to pass the limiter, a slidingwindow object, and three different policies 10 requests for a second, 100 for a minute and 1000reqs for 24 hours window.
 
+## How I Tested It
+RateLimiter Process Service -> RateLimiterServiceRun.exe 
+
+
+## Project Desing
 RateLimiter.Core
 - Models :
     - RateLimiterPolicy.cs
-- Storage : // Optional NOT IN USE
-    - IRateLimitStorage.cs
-    - localStorage.cs
 - Strategy :
-    - Absolute.cs // Optional NOT IN USE
+    - Absolute.cs               // Optional NOT IN USE
     - IRateLimitStrategy.cs
     - SlidingWindow.cs
 
 RateLimiter.Service
-- RateLimiterService.cs
+- Interface :
+    - RateLimiterService.cs
+- IRateLimiterService.cs
+
+RateLimiter.Run
 - Run.cs
 
-RateLimiter.Tests // 
-- UnitTest1.cs
-
-## Usage
+RateLimiter.Tests 
+- UnitTest.cs
 
 ---
 
-## *AsIs*
+## *The original assignment description*
 `Create a RateLimiter in C#.
 It's purpose is to be initialized with some Func> and multiple(!) rate limits.
 
