@@ -48,7 +48,7 @@ Ensures several requests are made on a calendar day starting at midnight (00:00)
 - Not accurate
 
 ## Usage
-An example of RateLimiter servive can be run via the run.exe
+An example of RateLimiter service can be run via the run.exe
 The example creates a ratelimiter service, with Func that prints a massage in case
 it succeed to pass the limiter, a slidingwindow object, and three different policies 10 requests for a second, 100 for a minute and 1000reqs for 24 hours window.
 
