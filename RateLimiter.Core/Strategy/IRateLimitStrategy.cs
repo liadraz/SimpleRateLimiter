@@ -1,10 +1,10 @@
 using RateLimiter.Core.Models;
+using RateLimiter.Core.Storage;
 
 namespace RateLimiter.Core.Strategy
 {
-    // Interface for rate-limiting strategies
     public interface IRateLimitStrategy
     {
-        Task<bool> IsRequestAllowedAsync(string id, RateLimitPolicy policy);
+         public bool CanMakeRequestAsync(RateLimitRecord rec, List<RateLimitPolicy> policies);
     }
 }

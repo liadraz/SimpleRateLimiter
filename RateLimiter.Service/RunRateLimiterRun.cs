@@ -7,9 +7,9 @@ class RateLimiterRun
     public static async Task Main()
     {
         // Decalre general Func to be called once the Caller request passed
-        Func<string, Task> callAction = async (arg) =>
+        Func<Task> callAction = async () =>
         {
-            Console.WriteLine($"Request allowed after {arg}");
+            Console.WriteLine($"Request allowed");
             await Task.Delay(TimeSpan.FromSeconds(1));
         };
 
@@ -29,22 +29,45 @@ class RateLimiterRun
         // Create the RateLimiterService.
         var rateLimiter = new RateLimiterService<string>(callAction, policies, slidingWindow);
 
-
+        //
         // Initate the RateLimiterService
         // Initaite muliple Clients each have unique ID
-
-        // Run continously the RateLimiterService and listen for Client requests
-
+        
         // Each client will send requests randomly which will be processed by All of the RateLimiter policies.
         // The ratelimiter should be able to handle multiple clients having different IDs as each client will have its own counter.
         
         // Print Every Second Each client requests counter for all of the RateLimiterpolicies
         // Also print how many requests were allowed and how many were rejected.
+
+        List<string> clients = new List<string> { "Potato", "Biscuit", "Lucky", "KipKip" };
+
+        // Run continously the RateLimiterService and listen for Client requests
+        var clientTasks = clients.Select(client => Task.Run(async ()=>
+        {
+            while (true)
+            {
+                // Simulate a random delay between requests
+                await Task.Delay(new Random().Next(100, 500));
+
+                await rateLimiter.Perform(client);
+            }
+        })).ToList();
+
+
+        var logTask = Task.Run(async () =>
+        {
+            while (true)
+            {
+                rateLimiter.LogRequestStats();
+                await Task.Delay(1000); // Log every second
+            }
+        });
+
+        await Task.Delay(TimeSpan.FromMinutes(5));
+
+        await Task.WhenAll(clientTasks);
+        await logTask;
+
     }
 
 }
-    public class ClientRequest
-    {
-        public string ID { get; set; }
-        public TimeSpan reqTime { get; set; }
-    }

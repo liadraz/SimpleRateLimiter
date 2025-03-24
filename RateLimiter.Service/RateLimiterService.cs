@@ -1,42 +1,70 @@
 ﻿﻿using System.Collections.Concurrent;
 
 using RateLimiter.Core.Models;
+using RateLimiter.Core.Storage;
 using RateLimiter.Core.Strategy;
-using RateLimiter.Service.Interface;
 
 namespace RateLimiter.Core.Service
 {
-    public class RateLimiterService<TArg> : IRateLimiterService<TArg>
+    public class RateLimiterService<TArg>
     {
-        private Func<TArg, Task> _callAction;
+        private Func<Task> _callAction;
         private IRateLimitStrategy _strategy;
         private List<RateLimitPolicy> _policies;
-        private readonly SemaphoreSlim _semaphore;
-        private readonly ConcurrentDictionary<ClientRequest, RateLimitRecord> _storage = new();
+        private readonly Dictionary<string, SemaphoreSlim> _semaphores = new();
+        private readonly ConcurrentDictionary<string, RateLimitRecord> _records = new();
+         private readonly object _lock = new(); 
 
-        public RateLimiterService(Func<TArg, Task> callAction, List<RateLimitPolicy> policies, IRateLimitStrategy strategy)
+        public RateLimiterService(Func<Task> callAction, List<RateLimitPolicy> policies, IRateLimitStrategy strategy)
         {
-            _callAction = callAction ?? throw new ArgumentNullException(nameof(callAction));
+            _callAction = callAction;
             _strategy = strategy;
             _policies = policies;
-            
-            _semaphore = new SemaphoreSlim(1, 1);
         }
 
-        public async Task<bool> Perform(TArg arg)
+        public async Task<bool> Perform(string callerID)
         {
-            // Each request has client ID when arrives it will be checked.
+            SemaphoreSlim semaphore;
 
-            // In case the client ID is new -> 
-            //      FALSE add it to the Storage, dictionary of clients
-            
-            //      TRUE get semaphore for the client ID
-                //  Critical Code - Can handle several different clients requests
-                // _strategy.IsAllowed(storage[id], _policies)
-                //      TRUE execute FUNC
-            
-            //  return counters of all policies
+            lock (_lock)
+            {
+                if (!_records.ContainsKey(callerID))
+                {
+                    _records[callerID] = new RateLimitRecord(_policies);
+                    _semaphores[callerID] = new SemaphoreSlim(1, 1); // One concurrent request per client
+                }
 
+                semaphore = _semaphores[callerID];
+            }
+
+            await semaphore.WaitAsync();
+            try
+            {
+                if (_strategy.CanMakeRequestAsync(_records[callerID], _policies))
+                {
+                    await _callAction();
+                    return true;
+                }
+
+                return false;
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+
+        public void LogRequestStats()
+        {
+            foreach (var id in _records)
+            {
+                Console.WriteLine($"Request {id.Key}:");
+
+                for (int i = 0; i < _policies.Count; i++)
+                {
+                    Console.WriteLine($"Policy {i + 1} - Limit: {_policies[i].Limit}, Requests: {id.Value.Counters[i]}");
+                }
+            }
         }
     }
 }

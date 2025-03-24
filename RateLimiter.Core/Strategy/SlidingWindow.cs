@@ -1,23 +1,33 @@
-using System.Collections.Concurrent;
 using RateLimiter.Core.Models;
 using RateLimiter.Core.Storage;
 
-namespace RateLimiter.Core.Strategy 
+namespace RateLimiter.Core.Strategy
 {
     public class SlidingWindowStrategy : IRateLimitStrategy
     {
-        public async Task<bool> IsRequestAllowedAsync(RateLimitRecord req, List<RateLimitPolicy> _policies)
+        public bool CanMakeRequestAsync(RateLimitRecord rec, List<RateLimitPolicy> policies)
         {
-            // iterate throgh all policies
-            //      Check if Peek time is smaller than reqTS - policy.window
-            //      TRUE    dequeue
-            //      --PolicyTimeCounter
-            
-            //  Check req.Count >= policy.limit
-            //      return false;
+            foreach (var policy in policies)
+            {
+                DateTime newTime = rec.TimeRequest - policy.TimeWindow;
 
-            // in case all policies passed enqueue reqTS
-            // return true
+                while (rec.TimeStampsQ.TryPeek(out DateTime lastTime) && lastTime < newTime)
+                {
+                    rec.TimeStampsQ.TryDequeue(out _);
+                    rec.DecrementCounter(policy.Id);
+                }
+
+                if (rec.GetCounter(policy.Id) >= policy.Limit)
+                {
+                    return false;
+                }
+                
+                rec.IncrementCounter(policy.Id);
+            }
+            
+            rec.TimeStampsQ.Enqueue(rec.TimeRequest);
+
+            return true;
         }
     }
 }
