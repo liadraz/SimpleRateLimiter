@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\RateLimiter.Service\RateLimiter.Service.csproj" />
     <ProjectReference Include="..\RateLimiter.Core\RateLimiter.Core.csproj" />
+    <ProjectReference Include="..\RateLimiter.Service\RateLimiter.Service.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
