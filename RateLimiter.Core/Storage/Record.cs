@@ -5,7 +5,7 @@ namespace RateLimiter.Core.Storage
 {
     // Overview
     //      Each caller to the RateLimiter will have an associated record.
-    //      The record will store the request time, a queue of accepted request timestamps, 
+    //      The record will store a queue of accepted request timestamps, 
     //      and a list of counters, where each counter represents a specific policy.
     public class Record
     {

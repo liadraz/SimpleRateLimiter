@@ -31,5 +31,13 @@ namespace RateLimiter.Service
             var reqTime = DateTime.UtcNow;
             await callerLimiter.ExecuteRequest(reqTime, request);
         }
+
+        public void PrintStatistics()
+        {
+            foreach (var kvp in _callerLimiters)
+            {
+                kvp.Value.logs(kvp.Key);
+            }
+        }
     }
 }

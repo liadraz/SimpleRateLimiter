@@ -42,18 +42,17 @@ namespace RateLimiter.Core
 
             return false;
         }
+        
+        public void logs(string id)
+        {
+            Console.WriteLine("=== Rate Limiter Statistics ===");
+                Console.WriteLine($"Client {id}:");
 
-        // public void LogRequestStats()
-        // {
-        //     foreach (var id in _records)
-        //     {
-        //         Console.WriteLine($"Request {id.Key}:");
-
-        //         for (int i = 0; i < _policies.Count; i++)
-        //         {
-        //             Console.WriteLine($"Policy {i + 1} - Limit: {_policies[i].Limit}, Requests: {id.Value.Counters[i]}");
-        //         }
-        //     }
-        // }
+                foreach (var policy in _policies)
+                {
+                    Console.WriteLine($"  {policy.UId}: {_record.GetCurrentLimit(policy.UId)} requests");
+                }
+            Console.WriteLine("==============================");
+        }
     }
 }

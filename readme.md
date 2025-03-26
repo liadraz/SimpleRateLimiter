@@ -48,27 +48,26 @@ Ensures several requests are made on a calendar day starting at midnight (00:00)
 - Not accurate
 
 ## Usage
-Execute Run.exe to see an example of the RateLimiter service.
-
-The example demonstrates the creation of a RateLimiter service with a Func that prints a message when a request successfully passes the rate limits. 
-It also includes a SlidingWindow object and defines three distinct rate-limiting policies: 10 requests per second, 100 requests per minute, and 1000 requests per 24-hour window.
+Execute Program.exe to see an example of the RateLimiter service.
 
 ## Project Desing
 RateLimiter.Core
 - Models :
-    - RateLimiterPolicy.cs
+    - Policy.cs
+    - RequestPacket.cs
 - Storage :
-    - RateLimiterRecord.cs
+    - Record.cs
 - Strategy :
     - Absolute.cs               // Optional NOT IN USE
     - IRateLimitStrategy.cs
     - SlidingWindow.cs
+CallerRateLimiter.cs
 
 RateLimiter.Service
 - RateLimiterService.cs
 
-Run
-- Run.cs
+MainApp
+- Program.cs
 
 ---
 
