@@ -85,3 +85,6 @@ obj/
 # Linux system files
 ##########################
 *~
+
+*.exe
+!.\MainApp\bin\Debug\net9.0\MainApp.exe
