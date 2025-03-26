@@ -1,70 +1,35 @@
 ﻿﻿using System.Collections.Concurrent;
 
+using RateLimiter.Core;
 using RateLimiter.Core.Models;
-using RateLimiter.Core.Storage;
 using RateLimiter.Core.Strategy;
 
-namespace RateLimiter.Core.Service
+namespace RateLimiter.Service
 {
-    public class RateLimiterService<TArg>
+    public class RateLimiterService<TArg> :IRateLimiterService<TArg>
     {
-        private Func<Task> _callAction;
-        private IRateLimitStrategy _strategy;
-        private List<RateLimitPolicy> _policies;
-        private readonly Dictionary<string, SemaphoreSlim> _semaphores = new();
-        private readonly ConcurrentDictionary<string, RateLimitRecord> _records = new();
-         private readonly object _lock = new(); 
+        private readonly ConcurrentDictionary<string, CallerRateLimiter<TArg>> _callerLimiters;
+        private ILimitStrategy _strategy;
 
-        public RateLimiterService(Func<Task> callAction, List<RateLimitPolicy> policies, IRateLimitStrategy strategy)
+
+        public RateLimiterService() : this(new LimitBySlidingWindow()) {}
+
+        public RateLimiterService(ILimitStrategy strategy)
         {
-            _callAction = callAction;
+            _callerLimiters = new ConcurrentDictionary<string, CallerRateLimiter<TArg>>();
+
             _strategy = strategy;
-            _policies = policies;
         }
 
-        public async Task<bool> Perform(string callerID)
+        public async Task Perform(RequestPacket<TArg> request)
         {
-            SemaphoreSlim semaphore;
+            var callerLimiter = _callerLimiters.GetOrAdd(
+                request.Id,
+                id => new CallerRateLimiter<TArg>(request.Policies, request.CallAction, _strategy)
+                );
 
-            lock (_lock)
-            {
-                if (!_records.ContainsKey(callerID))
-                {
-                    _records[callerID] = new RateLimitRecord(_policies);
-                    _semaphores[callerID] = new SemaphoreSlim(1, 1); // One concurrent request per client
-                }
-
-                semaphore = _semaphores[callerID];
-            }
-
-            await semaphore.WaitAsync();
-            try
-            {
-                if (_strategy.CanMakeRequestAsync(_records[callerID], _policies))
-                {
-                    await _callAction();
-                    return true;
-                }
-
-                return false;
-            }
-            finally
-            {
-                semaphore.Release();
-            }
-        }
-
-        public void LogRequestStats()
-        {
-            foreach (var id in _records)
-            {
-                Console.WriteLine($"Request {id.Key}:");
-
-                for (int i = 0; i < _policies.Count; i++)
-                {
-                    Console.WriteLine($"Policy {i + 1} - Limit: {_policies[i].Limit}, Requests: {id.Value.Counters[i]}");
-                }
-            }
+            var reqTime = DateTime.UtcNow;
+            await callerLimiter.ExecuteRequest(reqTime, request);
         }
     }
 }
