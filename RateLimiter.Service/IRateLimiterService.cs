@@ -2,16 +2,17 @@ using RateLimiter.Core.Models;
 
 namespace RateLimiter.Service
 {
-    //
-    //  This is the interface for the simple implemented rate limiter service
+    //  RateLimiter Service Interface
     //  
-    //  Create A RateLimiter Service -
+    //  Creation of a rateLimiter service -
     //      The RateLimiter service allows the use of custom strategies 
     //      ensures all rate limit policies are honored.
     //      If no strategy is provided, the Sliding Window algorithm will be used by default.
     // 
-    //      RequestPacket is a custom class representing a request. 
-    //      It contains:
+    //      The Perform method is called by a caller to access an endpoint, 
+    //      where the request is first processed by the rate limiter.
+    //
+    //      A call is made by passing a RequestPacket containing the following data:
     //          - callerID: The identifier of the caller making the request.
     //          - policies: A list of rate limit Policies to be enforced.
     //          - Func<TArg, Task>: A callback function executed when the request is allowed.
