@@ -20,8 +20,8 @@ namespace RateLimiter.MainApp
 
             var policies = new List<Policy> 
             {
-                new (10, TimeSpan.FromSeconds(1)),
-                new (100, TimeSpan.FromMinutes(1)),
+                new (1, TimeSpan.FromSeconds(1)),
+                new (10, TimeSpan.FromMinutes(1)),
                 new (1000, TimeSpan.FromMinutes(10))
             };
             
@@ -73,11 +73,11 @@ namespace RateLimiter.MainApp
                 }
             });
 
-            await Task.WhenAll(requestTask, logTask);
-
-            Console.WriteLine("Press ENTER to stop...");
+            Console.WriteLine("Press ENTER to stop");
             Console.ReadLine();
             cts.Cancel();
+
+            await Task.WhenAll(requestTask, logTask);
         }
     }
 }
