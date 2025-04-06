@@ -26,21 +26,24 @@ namespace RateLimiter.Core
 
         public async Task<bool> ExecuteRequest(DateTime reqTime, RequestPacket<TArg> request)
         {
+            bool is_allowed = false;
             await _semaphore.WaitAsync();
 
             try
             {
-                if (_strategy.IsAllowed(reqTime, _policies, _record))
-                {
-                    await _callAction(request.Arg!);
-                }
+                is_allowed = _strategy.IsAllowed(reqTime, _policies, _record));
             }
             finally
             {
                 _semaphore.Release();
             }
 
-            return false;
+            if (is_allowed)
+            {
+                await _callAction(request.Arg!);
+            }
+
+            return is_allowed;
         }
         
         public void logs(string id)
