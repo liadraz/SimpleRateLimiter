@@ -7,51 +7,58 @@ namespace RateLimiter.Core
 {
     public class CallerRateLimiter<TArg>
     {
-        private readonly List<Policy> _policies;
-        private readonly Func<TArg, Task> _callAction;
-        private readonly ILimitStrategy _strategy;
-
         private readonly Record _record;
+        private readonly ILimitStrategy _strategy;
         private readonly SemaphoreSlim _semaphore;
 
-        public CallerRateLimiter(List<Policy> policies, Func<TArg, Task> callAction, ILimitStrategy strategy)
+        public CallerRateLimiter(Request<TArg> request, ILimitStrategy strategy)
         {
-            _policies = policies;
-            _callAction = callAction;
             _strategy = strategy;
 
-            _record = new Record();
+            _record = new Record();  
             _semaphore = new SemaphoreSlim(1, 1);
         }
 
-        public async Task<bool> ExecuteRequest(DateTime reqTime, RequestPacket<TArg> request)
+        public async Task<bool> ExecuteRequest(DateTime reqTime, Request<TArg> request, List<Policy> rateLimiterPolicies)
         {
-            bool is_allowed = false;
             await _semaphore.WaitAsync();
 
             try
             {
-                is_allowed = _strategy.IsAllowed(reqTime, _policies, _record));
+                while (!_strategy.IsAllowed(reqTime, rateLimiterPolicies, _record))
+                {
+                    var delay = _strategy.GetRequiredDelay(reqTime, rateLimiterPolicies, _record);
+
+                    if (delay > TimeSpan.Zero)
+                    {
+                        await Task.Delay(delay);
+                        reqTime = DateTime.UtcNow;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                _record.AddTimeStamp(reqTime);
             }
             finally
             {
                 _semaphore.Release();
             }
 
-            if (is_allowed)
-            {
-                await _callAction(request.Arg!);
-            }
+            await request.CallAction(request.Arg!);
 
-            return is_allowed;
+            return true;
         }
         
+
         public void logs(string id)
         {
             Console.WriteLine("=== Rate Limiter Statistics ===");
                 Console.WriteLine($"Client {id}:");
 
-                foreach (var policy in _policies)
+                foreach (var policy in rateLimiterPolicies)
                 {
                     Console.WriteLine($"  {policy.UId}: {_record.GetCurrentLimit(policy.UId)} requests");
                 }
@@ -59,3 +66,18 @@ namespace RateLimiter.Core
         }
     }
 }
+
+// 1.
+// delay -> all requests are allowed
+
+// 2.
+// In record each policy on its own queue                   V
+// Enter to Add record / only strategy should be on caller  V
+// to many classes knows record
+
+// return excption
+
+// work only with request
+// to many files
+// two problems - delay, and the ts per each policy
+

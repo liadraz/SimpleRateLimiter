@@ -16,5 +16,8 @@ namespace RateLimiter.Core.Models
             Limit = limit;
             WindowTime = windowTime;
         }
+
+        public override bool Equals(object? obj) => obj is Policy p && p.UId == UId;
+        public override int GetHashCode() => HashCode.Combine(UId);
     }
 }

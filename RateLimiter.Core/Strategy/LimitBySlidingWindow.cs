@@ -12,23 +12,22 @@ namespace RateLimiter.Core.Strategy
             {
                 DateTime validTime = reqTime - policy.WindowTime;
                 
-                record.CleanupExpiredRecords(validTime, policy.UId);
+                record.CleanupExpiredRecords(validTime, policy);
 
                 // Check policiy limit
                 // Return false if one counter was not honored
-                if (record.GetCurrentLimit(policy.UId) >= policy.Limit)
+                if (record.GetCurrentLimit(policy) >= policy.Limit)
                 {
                     return false;
                 }
             }
 
-            foreach (var policy in policies)
-            {
-                // In case request was allowed enqueue the timestamp
-                record.AddTimeStamp(reqTime, policy);
-            }
-
             return true;
+        }
+
+        public TimeSpan GetRequiredDelay(DateTime reqTime, List<Policy> policies, Record record)
+        {
+             
         }
     }
 }

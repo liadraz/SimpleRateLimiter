@@ -21,6 +21,6 @@ namespace RateLimiter.Service
     public interface IRateLimiterService<TArg>
     {
         // Perform a rate-limited request by applying the defined policies and strategy.
-        Task Perform(RequestPacket<TArg> request);
+        Task Perform(Request<TArg> request);
     }
 }

@@ -8,28 +8,31 @@ namespace RateLimiter.Service
 {
     public class RateLimiterService<TArg> :IRateLimiterService<TArg>
     {
+        public List<Policy> _rateLimiterPolicies;
+
         private readonly ConcurrentDictionary<string, CallerRateLimiter<TArg>> _callerLimiters;
         private ILimitStrategy _strategy;
 
 
-        public RateLimiterService() : this(new LimitBySlidingWindow()) {}
+        public RateLimiterService(List<Policy> rateLimiterPolicies) : this(rateLimiterPolicies, new LimitBySlidingWindow()) {}
 
-        public RateLimiterService(ILimitStrategy strategy)
+        public RateLimiterService(List<Policy> rateLimiterPolicies, ILimitStrategy strategy)
         {
             _callerLimiters = new ConcurrentDictionary<string, CallerRateLimiter<TArg>>();
-
+            _rateLimiterPolicies = new List<Policy>();
+            
             _strategy = strategy;
         }
 
-        public async Task Perform(RequestPacket<TArg> request)
+        public async Task Perform(Request<TArg> request)
         {
             var callerLimiter = _callerLimiters.GetOrAdd(
                 request.Id,
-                id => new CallerRateLimiter<TArg>(request.Policies, request.CallAction, _strategy)
+                id => new CallerRateLimiter<TArg>(request, _strategy)
                 );
 
             var reqTime = DateTime.UtcNow;
-            await callerLimiter.ExecuteRequest(reqTime, request);
+            await callerLimiter.ExecuteRequest(reqTime, request, _rateLimiterPolicies);
         }
 
         public void PrintStatistics()

@@ -5,42 +5,38 @@ namespace RateLimiter.Core.Storage
 {
     // Overview
     //      Each caller to the RateLimiter will have an associated record.
-    //      The record will store a queue of accepted request timestamps, 
-    //      and a list of counters, where each counter represents a specific policy.
+    //      The record will store queues of accepted request timestamps for each policy.
     public class Record
     {
-        private readonly ConcurrentQueue<DateTime> _timeStamps;
-        private readonly ConcurrentDictionary<int, int> _policyCounters;
+        private readonly ConcurrentDictionary<Policy, ConcurrentQueue<DateTime>> _policyTimeStamps;
+
 
         public Record()
         {
-            _timeStamps = new ConcurrentQueue<DateTime>();
-            _policyCounters = new ConcurrentDictionary<int, int>();
+            _policyTimeStamps = new ConcurrentDictionary<Policy, ConcurrentQueue<DateTime>>();
         }
 
-        public void AddTimeStamp(DateTime time, Policy policy)
+        public void AddTimeStamp(DateTime time)
         {
-            _timeStamps.Enqueue(time);
-
-            _policyCounters.AddOrUpdate(policy.UId, 1,
-                (_, count) => Math.Min(policy.Limit, count + 1));
-        }
-
-        public void CleanupExpiredRecords(DateTime newtime, int Id)
-        {
-            while (_timeStamps.TryPeek(out var oldest) && oldest < newtime)
+            foreach (var policyQ in _policyTimeStamps.Keys)
             {
-                _timeStamps.TryDequeue(out _);
-
-                _policyCounters.AddOrUpdate(Id, 0, (_, count) => Math.Max(0, count - 1));
+                _policyTimeStamps[policyQ].Enqueue(time);
             }
         }
 
-        public int GetCurrentLimit(int id)
+        public void CleanupExpiredRecords(DateTime newtime, Policy policy)
         {
-            if (_policyCounters.ContainsKey(id))
+            while (_policyTimeStamps[policy].TryPeek(out var oldest) && oldest < newtime)
             {
-                return _policyCounters[id];
+                _policyTimeStamps[policy].TryDequeue(out _);
+            }
+        }
+
+        public int GetCurrentLimit(Policy policy)
+        {
+            if (_policyTimeStamps.ContainsKey(policy))
+            {
+                return _policyTimeStamps[policy].Count;
             }
 
             return -1;
