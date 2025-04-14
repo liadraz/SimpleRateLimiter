@@ -18,14 +18,7 @@ namespace RateLimiter.MainApp
                 await Task.Delay(TimeSpan.FromSeconds(2));
             };
 
-            var policies = new List<Policy> 
-            {
-                new (1, TimeSpan.FromSeconds(1)),
-                new (10, TimeSpan.FromMinutes(1)),
-                new (1000, TimeSpan.FromMinutes(10))
-            };
-            
-            var requests= new List<RequestPacket<string>>();
+            var requests = new List<RequestPacket<string>>();
             for (int i = 0; i < 5; i++)
             {
                 int clientID = i+1;
