@@ -1,4 +1,5 @@
-namespace RateLimiter.Core.Models
+
+namespace RateLimiter.Service.Models
 {
     public class Request<TArg>
     {

@@ -1,6 +1,6 @@
 ﻿
 using RateLimiter.Service;
-using RateLimiter.Core.Models;
+using RateLimiter.Service.Models;
 
 namespace RateLimiter.MainApp
 {
@@ -18,21 +18,14 @@ namespace RateLimiter.MainApp
                 await Task.Delay(TimeSpan.FromSeconds(2));
             };
 
-            var policies = new List<Policy> 
-            {
-                new (1, TimeSpan.FromSeconds(1)),
-                new (10, TimeSpan.FromMinutes(1)),
-                new (1000, TimeSpan.FromMinutes(10))
-            };
-            
-            var requests= new List<RequestPacket<string>>();
+            var requests = new List<Request<string>>();
             for (int i = 0; i < 5; i++)
             {
                 int clientID = i+1;
 
-                requests.Add(new RequestPacket<string>(
+                requests.Add(new Request<string>(
                 clientID.ToString(), 
-                policies,
+                Policy.RateLimiterPolicies,
                 CallExternalApi,
                 "used by the callback"));
             }
@@ -68,7 +61,6 @@ namespace RateLimiter.MainApp
             {
                 while (!cts.Token.IsCancellationRequested)
                 {
-                    rateLimiter.PrintStatistics();
                     await Task.Delay(1000);
                 }
             });

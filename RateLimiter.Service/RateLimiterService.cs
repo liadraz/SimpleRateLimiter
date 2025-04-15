@@ -1,46 +1,45 @@
-﻿﻿using System.Collections.Concurrent;
+﻿﻿﻿﻿using System.Collections.Concurrent;
 
-using RateLimiter.Core;
-using RateLimiter.Core.Models;
-using RateLimiter.Core.Strategy;
+using RateLimiter.Service.Models;
+using RateLimiter.Service.Strategy;
 
 namespace RateLimiter.Service
 {
     public class RateLimiterService<TArg> :IRateLimiterService<TArg>
     {
-        public List<Policy> _rateLimiterPolicies;
-
+        // Each clientID will have its own RateLimiter which will handle the requests
         private readonly ConcurrentDictionary<string, CallerRateLimiter<TArg>> _callerLimiters;
-        private ILimitStrategy _strategy;
+        
+        private readonly ILimitStrategy _strategy;
+        private readonly List<Policy> _rateLimiterPolicies;
 
 
-        public RateLimiterService(List<Policy> rateLimiterPolicies) : this(rateLimiterPolicies, new LimitBySlidingWindow()) {}
-
-        public RateLimiterService(List<Policy> rateLimiterPolicies, ILimitStrategy strategy)
+        public RateLimiterService(ILimitStrategy? strategy = null)
         {
             _callerLimiters = new ConcurrentDictionary<string, CallerRateLimiter<TArg>>();
-            _rateLimiterPolicies = new List<Policy>();
-            
-            _strategy = strategy;
+
+            _strategy = strategy ?? new LimitBySlidingWindow();
+            _rateLimiterPolicies = Policy.RateLimiterPolicies;
         }
 
         public async Task Perform(Request<TArg> request)
         {
             var callerLimiter = _callerLimiters.GetOrAdd(
                 request.Id,
-                id => new CallerRateLimiter<TArg>(request, _strategy)
+                id => new CallerRateLimiter<TArg>()
                 );
 
             var reqTime = DateTime.UtcNow;
-            await callerLimiter.ExecuteRequest(reqTime, request, _rateLimiterPolicies);
+            await callerLimiter.ExecuteRequest(reqTime, request, _rateLimiterPolicies, _strategy);
         }
 
-        public void PrintStatistics()
-        {
-            foreach (var kvp in _callerLimiters)
-            {
-                kvp.Value.logs(kvp.Key);
-            }
-        }
+
+        // public void PrintStatistics()
+        // {
+        //     foreach (var kvp in _callerLimiters)
+        //     {
+        //         kvp.Value.logs(kvp.Key);
+        //     }
+        // }
     }
 }
