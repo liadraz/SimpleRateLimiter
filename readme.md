@@ -51,7 +51,7 @@ Ensures several requests are made on a calendar day starting at midnight (00:00)
 Execute Program.exe to see an example of the RateLimiter service.
 
 ## Project Desing
-RateLimiter.Core
+RateLimiter.Service
 - Models :
     - Policy.cs
     - RequestPacket.cs
@@ -61,9 +61,7 @@ RateLimiter.Core
     - Absolute.cs               // Optional NOT IN USE
     - IRateLimitStrategy.cs
     - SlidingWindow.cs
-CallerRateLimiter.cs
-
-RateLimiter.Service
+- CallerRateLimiter.cs
 - RateLimiterService.cs
 
 MainApp
