@@ -23,7 +23,7 @@ namespace RateLimiter.Service.Storage
             }
         }
 
-        public int GetValidCount(DateTime reqTime, Policy policy)
+        public int GetCount(Policy policy)
         {
             if (!_policyTimeStamps.TryGetValue(policy, out var queue))
             {
@@ -33,9 +33,19 @@ namespace RateLimiter.Service.Storage
             return queue.Count;
         }
 
-        public void CleanupExpired(DateTime reqTime, Policy policy)
+        public DateTime? GetFirstValidTimestamp(Policy policy)
         {
-            var windowStart = reqTime - policy.WindowTime;
+            if (_policyTimeStamps.TryGetValue(policy, out var queue) && queue.TryPeek(out var first))
+            {
+                return first;
+            }
+
+            return null;
+        }
+        
+        public void CleanupExpired(DateTime time, Policy policy)
+        {
+            var windowStart = time - policy.WindowTime;
 
             if (_policyTimeStamps.TryGetValue(policy, out var queue))
             {
@@ -46,11 +56,5 @@ namespace RateLimiter.Service.Storage
             }
         }
 
-        public IEnumerable<DateTime> GetTimestamps(Policy policy)
-        {
-            return _policyTimeStamps.TryGetValue(policy, out var queue)
-                ? queue.ToArray()
-                : Enumerable.Empty<DateTime>();
-        }
     }
 }

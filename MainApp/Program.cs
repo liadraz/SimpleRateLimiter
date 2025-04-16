@@ -10,20 +10,21 @@ namespace RateLimiter.MainApp
         {
             Console.WriteLine("\n~ Welcome to RateLimiter Service ~\n");
             
-            Func<string, Task> CallExternalApi = async (arg) =>
-            {
-                await Task.Delay(TimeSpan.FromSeconds(1));
+            var rateLimiter = new RateLimiterService<string>();
+            
+            string clientId = "Client01";
+            Func<string?, Task> CallAction = (string? arg) => Task.Delay(TimeSpan.FromSeconds(1));
+            List<Policy> policies = 
+            new()
+            {   
+                new (1, TimeSpan.FromSeconds(3)),
+                // new (5, TimeSpan.FromSeconds(10)),
+                // new (5, TimeSpan.FromMinutes(1)),
+                // new (10, TimeSpan.FromMinutes(10))
             };
 
-            string clientId = "Client01";
+            var request = new Request<string>(clientId, policies, CallAction, clientId);
 
-            var request = new Request<string>(
-            clientId, 
-            Policy.RateLimiterPolicies,
-            CallExternalApi,
-            clientId);
-
-            var rateLimiter = new RateLimiterService<string>();
 
             List<Task> tasks = new List<Task>();
             for (int i = 0; i < 10; i++)

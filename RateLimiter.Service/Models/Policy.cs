@@ -19,15 +19,5 @@ namespace RateLimiter.Service.Models
 
         public override int GetHashCode() => HashCode.Combine(UId);
         public override bool Equals(object? obj) => obj is Policy p && p.UId == UId;
-
-
-        public static readonly List<Policy> RateLimiterPolicies = 
-            new()
-            {   
-                new (1, TimeSpan.FromSeconds(1)),
-                new (5, TimeSpan.FromSeconds(10)),
-                // new (5, TimeSpan.FromMinutes(1)),
-                // new (10, TimeSpan.FromMinutes(10))
-            };
     }
 }

@@ -15,11 +15,7 @@ namespace RateLimiter.Service
                 _ => new RateLimiterEvaluator<TArg>(request.Policies)
             );
 
-            Console.WriteLine($"Request from {request.Arg} starts {reqTime:HH:mm:ss.fff}");
-
-            await evaluator.EvaluateAsync(reqTime, request.Arg!, (arg) => request.CallAction(arg));
-
-            Console.WriteLine($"Request from {request.Arg} Passed in {DateTime.UtcNow:HH:mm:ss.fff}\n\n");
+            await evaluator.EvaluateAsync(reqTime, (arg) => request.CallAction(arg), request.Arg);
         }
     }
 }

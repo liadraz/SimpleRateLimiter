@@ -16,8 +16,9 @@ namespace RateLimiter.Service
             _policies = policies;
         }
 
-        public async Task EvaluateAsync(DateTime reqTime, TArg arg, Func<TArg, Task> reqAction)
+        public async Task EvaluateAsync(DateTime reqTime, Func<TArg?, Task> reqAction, TArg? arg)
         {
+            Console.WriteLine($"Request starts {reqTime:HH:mm:ss.fff}");
             await _semaphore.WaitAsync();
             try
             {
@@ -29,6 +30,7 @@ namespace RateLimiter.Service
                 _semaphore.Release();
             }
 
+            Console.WriteLine($"Request Passed {DateTime.UtcNow:HH:mm:ss.fff}\n\n");
             await reqAction(arg);
         }
 
@@ -39,25 +41,21 @@ namespace RateLimiter.Service
                 while (true)
                 {
                     _record.CleanupExpired(reqTime, policy);
-                    int validCount = _record.GetValidCount(reqTime, policy);
-
-                    if (validCount < policy.Limit)
+                    if (_record.GetCount(policy) < policy.Limit)
                     {
                         break;
                     }
 
-                    var timestamps = _record.GetTimestamps(policy).ToList();
-                    if (timestamps.Count == 0) 
+                    DateTime? first = _record.GetFirstValidTimestamp(policy);
+                    if (first == null)
                     {
                         break;
                     }
 
-                    var first = timestamps.First();
                     var delay = (first + policy.WindowTime) - reqTime;
-
                     if (delay > TimeSpan.Zero)
                     {
-                        await Task.Delay(delay);
+                        await Task.Delay(delay.Value);
                         reqTime = DateTime.UtcNow;
                     }
                     else
