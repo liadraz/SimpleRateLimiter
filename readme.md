@@ -7,8 +7,8 @@ This is a valuable addition to enhancing security and ensuring quality control.
 
 ## Requirements
 - Initiate the RateLimiter with `Func` and with multiple rate limit policies.
-- Provide a `Task Perform(TArg arg)` method as the interface for request calls.
-- Gurantee all rate limit polices are honored. If not delay execution until it does.
+- Provide a `Perform(TArg arg)` method as the interface for request calls.
+- Gurantee all rate limit polices are honored. If not delay the execution until it does.
 - The RateLimiter is expected to handle concurrent calls from multiple threads safely.
 - Use the most effective algorithm for limit requests - Sliding winow Vs Absolute.
 
@@ -58,7 +58,6 @@ RateLimiter.Service
 - Storage :
     - Record.cs
 - Strategy :
-    - Absolute.cs               // Optional NOT IN USE
     - IRateLimitStrategy.cs
     - SlidingWindow.cs
 - CallerRateLimiter.cs

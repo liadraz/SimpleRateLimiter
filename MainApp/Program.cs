@@ -12,8 +12,7 @@ namespace RateLimiter.MainApp
             
             Func<string, Task> CallExternalApi = async (arg) =>
             {
-                Console.WriteLine($"Request from {arg} Passed in {DateTime.UtcNow:HH:mm:ss.fff}\n\n");
-                await Task.Delay(TimeSpan.FromSeconds(0));
+                await Task.Delay(TimeSpan.FromSeconds(1));
             };
 
             string clientId = "Client01";
@@ -27,7 +26,7 @@ namespace RateLimiter.MainApp
             var rateLimiter = new RateLimiterService<string>();
 
             List<Task> tasks = new List<Task>();
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 10; i++)
             {
                 tasks.Add(Task.Run(() => rateLimiter.Perform(request)));
             }

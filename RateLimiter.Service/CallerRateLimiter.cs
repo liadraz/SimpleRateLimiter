@@ -22,6 +22,7 @@ namespace RateLimiter.Service
 
             try
             {
+                Console.WriteLine($"Request from {request.Arg} starts {DateTime.UtcNow:HH:mm:ss.fff}");
                 foreach (var policy in rateLimiterPolicies)
                 {
                     while (!strategy.IsRequestAllowed(reqTime, policy, _record))
@@ -53,6 +54,7 @@ namespace RateLimiter.Service
                 _semaphore.Release();
             }
 
+            Console.WriteLine($"Request from {request.Arg} Passed in {DateTime.UtcNow:HH:mm:ss.fff}\n\n");
             await request.CallAction(request.Arg!);
         }
     }

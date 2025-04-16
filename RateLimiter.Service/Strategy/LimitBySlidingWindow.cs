@@ -18,7 +18,6 @@ namespace RateLimiter.Service.Strategy
                 ret = false;
             }
 
-            System.Console.WriteLine($"IsRequestAllowed -> {ret} {validTime}");
             return ret;
         }
     }
