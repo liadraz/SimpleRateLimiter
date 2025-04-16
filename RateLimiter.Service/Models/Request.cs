@@ -5,10 +5,10 @@ namespace RateLimiter.Service.Models
     {
             public string Id { get; }
             public List<Policy> Policies { get; }
-            public Func<TArg, Task> CallAction { get; }
+            public Func<TArg?, Task> CallAction { get; }
             public TArg? Arg { get; }
 
-            public Request(string id, List<Policy> polocies, Func<TArg, Task> callAction, TArg? arg)
+            public Request(string id, List<Policy> polocies, Func<TArg?, Task> callAction, TArg? arg)
             {
                 Id = id;
                 Policies = polocies;

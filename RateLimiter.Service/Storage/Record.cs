@@ -8,44 +8,49 @@ namespace RateLimiter.Service.Storage
     {
         private readonly ConcurrentDictionary<Policy, ConcurrentQueue<DateTime>> _policyTimeStamps;
 
-        public Record(List<Policy> rateLimiterPolicies)
+        public Record(List<Policy> policies)
         {
             _policyTimeStamps = new ConcurrentDictionary<Policy, ConcurrentQueue<DateTime>>(
-                rateLimiterPolicies.ToDictionary(
-                    policy => policy,
-                    policy => new ConcurrentQueue<DateTime>()
-                )
+                policies.ToDictionary(p => p, _ => new ConcurrentQueue<DateTime>())
             );
         }
 
-        public void AddRecord(DateTime time)
+        public void Add(DateTime time)
         {
-            foreach (var policy in _policyTimeStamps.Keys)
+            foreach (var queue in _policyTimeStamps.Values)
             {
-                _policyTimeStamps[policy].Enqueue(time);
+                queue.Enqueue(time);
             }
         }
 
-        public void CleanupExpiredRecords(DateTime newtime, Policy policy)
+        public int GetValidCount(DateTime reqTime, Policy policy)
         {
+            if (!_policyTimeStamps.TryGetValue(policy, out var queue))
+            {
+                return 0;
+            }
+
+            return queue.Count;
+        }
+
+        public void CleanupExpired(DateTime reqTime, Policy policy)
+        {
+            var windowStart = reqTime - policy.WindowTime;
+
             if (_policyTimeStamps.TryGetValue(policy, out var queue))
             {
-                while (queue.TryPeek(out var oldest) && oldest < newtime)
+                while (queue.TryPeek(out var oldest) && oldest < windowStart)
                 {
                     _policyTimeStamps[policy].TryDequeue(out _);
                 }
             }
         }
 
-        public DateTime? GetLastTime(Policy policy)
+        public IEnumerable<DateTime> GetTimestamps(Policy policy)
         {
-            return _policyTimeStamps.TryGetValue(policy, out var queue) && queue.TryPeek(out var lastTime) ? lastTime : null;
+            return _policyTimeStamps.TryGetValue(policy, out var queue)
+                ? queue.ToArray()
+                : Enumerable.Empty<DateTime>();
         }
-
-        public int GetRecordAmount(Policy policy)
-        {
-            return _policyTimeStamps.TryGetValue(policy, out var queue) ? queue.Count : -1;
-        }
-
     }
 }

@@ -1,35 +1,25 @@
 ﻿﻿using System.Collections.Concurrent;
-
 using RateLimiter.Service.Models;
-using RateLimiter.Service.Strategy;
 
 namespace RateLimiter.Service
 {
-    public class RateLimiterService<TArg> :IRateLimiterService<TArg>
+    public class RateLimiterService<TArg> : IRateLimiterService<TArg>
     {
-        private readonly ConcurrentDictionary<string, CallerRateLimiter<TArg>> _callerLimiters;
-        
-        private readonly ILimitStrategy _strategy;
-        private readonly List<Policy> _rateLimiterPolicies;
-
-
-        public RateLimiterService(ILimitStrategy? strategy = null)
-        {
-            _callerLimiters = new ConcurrentDictionary<string, CallerRateLimiter<TArg>>();
-
-            _strategy = strategy ?? new LimitBySlidingWindow();
-            _rateLimiterPolicies = Policy.RateLimiterPolicies;      // Defined fixed policies for simplicity
-        }
+        private readonly ConcurrentDictionary<string, RateLimiterEvaluator<TArg>> _evaluators = new();
 
         public async Task Perform(Request<TArg> request)
         {
-            var callerLimiter = _callerLimiters.GetOrAdd(
-                request.Id,
-                id => new CallerRateLimiter<TArg>(_rateLimiterPolicies)
-                );
-
             var reqTime = DateTime.UtcNow;
-            await callerLimiter.ExecuteRequest(reqTime, request, _rateLimiterPolicies, _strategy);
+            var evaluator = _evaluators.GetOrAdd(
+                request.Id,
+                _ => new RateLimiterEvaluator<TArg>(request.Policies)
+            );
+
+            Console.WriteLine($"Request from {request.Arg} starts {reqTime:HH:mm:ss.fff}");
+
+            await evaluator.EvaluateAsync(reqTime, request.Arg!, (arg) => request.CallAction(arg));
+
+            Console.WriteLine($"Request from {request.Arg} Passed in {DateTime.UtcNow:HH:mm:ss.fff}\n\n");
         }
     }
 }
