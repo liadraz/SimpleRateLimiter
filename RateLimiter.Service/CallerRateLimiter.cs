@@ -10,9 +10,9 @@ namespace RateLimiter.Service
         private readonly Record _record;
         private readonly SemaphoreSlim _semaphore;
 
-        public CallerRateLimiter()
+        public CallerRateLimiter(List<Policy> rateLimiterPolicies)
         {
-            _record = new Record();
+            _record = new Record(rateLimiterPolicies);
             _semaphore = new SemaphoreSlim(1, 1);
         }
 
@@ -32,7 +32,8 @@ namespace RateLimiter.Service
                             break;
                         }
                         
-                        TimeSpan delay = reqTime - last.Value;
+                        // TimeSpan delay = reqTime - last.Value;
+                        TimeSpan delay = (last.Value + policy.WindowTime) - reqTime;
                         if (delay > TimeSpan.Zero)
                         {
                             await Task.Delay(delay);
@@ -54,18 +55,5 @@ namespace RateLimiter.Service
 
             await request.CallAction(request.Arg!);
         }
-        
-
-        // public void logs(string id)
-        // {
-        //     Console.WriteLine("=== Rate Limiter Statistics ===");
-        //         Console.WriteLine($"Client {id}:");
-
-        //         foreach (var policy in rateLimiterPolicies)
-        //         {
-        //             Console.WriteLine($"  {policy.UId}: {_record.GetRecordAmount(policy.UId)} requests");
-        //         }
-        //     Console.WriteLine("==============================");
-        // }
     }
 }

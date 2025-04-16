@@ -24,9 +24,10 @@ namespace RateLimiter.Service.Models
         public static readonly List<Policy> RateLimiterPolicies = 
             new()
             {   
-                new (1, TimeSpan.FromSeconds(1)),
-                new (10, TimeSpan.FromMinutes(1)),
-                new (1000, TimeSpan.FromMinutes(10))
+                new (1, TimeSpan.FromSeconds(5)),
+                // new (5, TimeSpan.FromSeconds(10)),
+                // new (5, TimeSpan.FromMinutes(1)),
+                // new (10, TimeSpan.FromMinutes(10))
             };
     }
 }

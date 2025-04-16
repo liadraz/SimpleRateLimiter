@@ -8,9 +8,14 @@ namespace RateLimiter.Service.Storage
     {
         private readonly ConcurrentDictionary<Policy, ConcurrentQueue<DateTime>> _policyTimeStamps;
 
-        public Record()
+        public Record(List<Policy> rateLimiterPolicies)
         {
-            _policyTimeStamps = new ConcurrentDictionary<Policy, ConcurrentQueue<DateTime>>();
+            _policyTimeStamps = new ConcurrentDictionary<Policy, ConcurrentQueue<DateTime>>(
+                rateLimiterPolicies.ToDictionary(
+                    policy => policy,
+                    policy => new ConcurrentQueue<DateTime>()
+                )
+            );
         }
 
         public void AddRecord(DateTime time)
